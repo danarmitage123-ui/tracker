@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recovery App</title>
+    <style>
+        :root { --bg: #0b1f2b; --card: #1a2c38; --primary: #4cc9f0; --accent: #7209b7; --text: #ffffff; --muted: #94a3b8; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 15px; box-sizing: border-box; }
+        .container { max-width: 100%; margin: 0 auto; }
+        
+        /* Fixed Header for Mobile */
+        .header { margin-bottom: 20px; text-align: center; }
+        h1 { font-size: 22px; margin: 0 0 12px 0; background: linear-gradient(90deg, #4cc9f0, #f72585); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .date-container { width: 100%; display: flex; justify-content: center; }
+        input[type=date] { background: var(--card); border: 1px solid #2d3d4d; color: white; padding: 10px 15px; border-radius: 25px; font-size: 15px; width: auto; text-align: center; outline: none; }
+
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #2d3d4d; }
+        h3 { font-size: 11px; text-transform: uppercase; color: var(--primary); letter-spacing: 1px; margin: 0 0 15px 0; }
+
+        /* Snapshot Display */
+        .snapshot-view { background: linear-gradient(135deg, rgba(76, 201, 240, 0.1) 0%, rgba(114, 9, 183, 0.1) 100%); border: 1px solid var(--primary); }
+        .snap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+        .snap-box { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 12px; text-align: center; }
+        .snap-box label { font-size: 9px; color: var(--muted); display: block; margin-bottom: 4px; }
+        .snap-val { font-size: 13px; font-weight: 700; line-height: 1.4; }
+        .snap-val b { color: var(--primary); }
+        .snap-meals { font-size: 13px; line-height: 1.5; color: #e2e8f0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+
+        /* Input Layout */
+        .time-tabs { display: flex; gap: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; background: none; color: var(--muted); font-weight: 700; font-size: 13px; }
+        .tab.active { background: var(--primary); color: #0b1f2b; }
+
+        .slider-section { margin-bottom: 15px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .score { font-size: 18px; font-weight: 800; color: var(--primary); }
+        input[type=range] { width: 100%; -webkit-appearance: none; background: #2d3d4d; height: 6px; border-radius: 10px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #fff; border-radius: 50%; border: 3px solid var(--primary); }
+
+        .food-stack { display: flex; flex-direction: column; gap: 8px; }
+        .food-item label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        .food-item input { background: #0b1f2b; border: 1px solid #2d3d4d; padding: 12px; border-radius: 10px; color: white; font-size: 15px; width: 100%; box-sizing: border-box; }
+
+        .water-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #2d3d4d; }
+        .water-ctrl { display: flex; align-items: center; gap: 12px; }
+        .w-btn { background: var(--primary); border: none; color: #0b1f2b; width: 30px; height: 30px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+
+        .btn-save { width: 100%; padding: 18px; border-radius: 18px; border: none; background: linear-gradient(45deg, #7209b7, #f72585); color: white; font-weight: 800; font-size: 17px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Recovery Pro+</h1>
+        <div class="date-container">
+            <input type="date" id="datePicker" onchange="loadData()">
+        </div>
+    </div>
+
+    <div class="card snapshot-view">
+        <h3>Today's Snapshot</h3>
+        <div class="snap-grid">
+            <div class="snap-box">
+                <label>AM</label>
+                <div class="snap-val" id="sAM">⚡ -- | ☁️ --</div>
+            </div>
+            <div class="snap-box">
+                <label>PM</label>
+                <div class="snap-val" id="sPM">⚡ -- | ☁️ --</div>
+            </div>
+            <div class="snap-box">
+                <label>NIGHT</label>
+                <div class="snap-val" id="sNT">⚡ -- | ☁️ --</div>
+            </div>
+        </div>
+        <div id="sMeals" class="snap-meals">No data logged.</div>
+        <div style="margin-top:8px; font-size: 12px; color: var(--primary);" id="sWater">💧 Water: 0 glasses</div>
+    </div>
+
+    <div class="card">
+        <h3>Log Entry</h3>
+        <div class="time-tabs">
+            <button class="tab active" onclick="setT(this,'AM')">AM</button>
+            <button class="tab" onclick="setT(this,'PM')">PM</button>
+            <button class="tab" onclick="setT(this,'Night')">Night</button>
+        </div>
+
+        <div class="slider-section">
+            <div class="label-row"><span>Energy ⚡</span> <span class="score" id="ev">5</span></div>
+            <input type="range" id="e" min="1" max="10" value="5" oninput="ev.innerText=this.value">
+        </div>
+
+        <div class="slider-section">
+            <div class="label-row"><span>Brain Fog ☁️</span> <span class="score" id="fv">5</span></div>
+            <input type="range" id="f" min="1" max="10" value="5" oninput="fv.innerText=this.value">
+        </div>
+
+        <div class="food-stack">
+            <div class="food-item"><label>Breakfast</label><input type="text" id="fb" placeholder="..."></div>
+            <div class="food-item"><label>Lunch</label><input type="text" id="fl" placeholder="..."></div>
+            <div class="food-item"><label>Dinner</label><input type="text" id="fd" placeholder="..."></div>
+            <div class="food-item"><label>Snacks</label><input type="text" id="fs" placeholder="..."></div>
+        </div>
+
+        <div class="water-row">
+            <span style="font-size: 12px; font-weight: 600;">Water 💧</span>
+            <div class="water-ctrl">
+                <button class="w-btn" onclick="addW(-1)">-</button>
+                <b id="wv" style="font-size: 17px; min-width: 20px; text-align: center;">0</b>
+                <button class="w-btn" onclick="addW(1)">+</button>
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="save()">Update Dashboard</button>
+    </div>
+</div>
+
+<script>
+    let activeTime = 'AM';
+    let db = JSON.parse(localStorage.getItem('recovery_v6_db') || '{}');
+    const dt = document.getElementById('datePicker');
+    dt.valueAsDate = new Date();
+
+    function setT(btn, t) {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTime = t;
+    }
+
+    function addW(val) {
+        let wv = document.getElementById('wv');
+        wv.innerText = Math.max(0, parseInt(wv.innerText) + val);
+    }
+
+    function save() {
+        const d = dt.value;
+        if(!db[d]) db[d] = { am:{}, pm:{}, night:{}, food:{}, water:0 };
+        db[d][activeTime.toLowerCase()] = { e: document.getElementById('e').value, f: document.getElementById('f').value };
+        db[d].food = { b: document.getElementById('fb').value, l: document.getElementById('fl').value, d: document.getElementById('fd').value, s: document.getElementById('fs').value };
+        db[d].water = parseInt(document.getElementById('wv').innerText);
+        localStorage.setItem('recovery_v6_db', JSON.stringify(db));
+        loadData();
+    }
+
+    function loadData() {
+        const d = dt.value;
+        const data = db[d] || { am:{}, pm:{}, night:{}, food:{}, water:0 };
+        const fmt = (slot) => slot.e ? `⚡<b>${slot.e}</b> | ☁️<b>${slot.f}</b>` : `⚡-- | ☁️--`;
+        document.getElementById('sAM').innerHTML = fmt(data.am);
+        document.getElementById('sPM').innerHTML = fmt(data.pm);
+        document.getElementById('sNT').innerHTML = fmt(data.night);
+        document.getElementById('sWater').innerText = `💧 Water: ${data.water || 0} glasses`;
+        const f = data.food;
+        if(f.b || f.l || f.d || f.s) {
+            document.getElementById('sMeals').innerHTML = `<b>B:</b> ${f.b||'-'} | <b>L:</b> ${f.l||'-'}<br><b>D:</b> ${f.d||'-'} | <b>S:</b> ${f.s||'-'}`;
+        } else { document.getElementById('sMeals').innerText = "No meals logged."; }
+        document.getElementById('fb').value = f.b || '';
+        document.getElementById('fl').value = f.l || '';
+        document.getElementById('fd').value = f.d || '';
+        document.getElementById('fs').value = f.s || '';
+        document.getElementById('wv').innerText = data.water || 0;
+    }
+    loadData();
+</script>
+</body>
+</html>
