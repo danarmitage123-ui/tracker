@@ -2,20 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Recovery App</title>
     <style>
+        /* Theme Variables */
         :root { --bg: #0b1f2b; --card: #1a2c38; --primary: #4cc9f0; --accent: #7209b7; --text: #ffffff; --muted: #94a3b8; }
-        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 15px; box-sizing: border-box; }
-        .container { max-width: 100%; margin: 0 auto; }
-        
-        /* Fixed Header for Mobile */
-        .header { margin-bottom: 20px; text-align: center; }
-        h1 { font-size: 22px; margin: 0 0 12px 0; background: linear-gradient(90deg, #4cc9f0, #f72585); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .date-container { width: 100%; display: flex; justify-content: center; }
-        input[type=date] { background: var(--card); border: 1px solid #2d3d4d; color: white; padding: 10px 15px; border-radius: 25px; font-size: 15px; width: auto; text-align: center; outline: none; }
+        [data-theme="berry"] { --bg: #1a0b1a; --card: #2c1a2c; --primary: #f72585; --accent: #7209b7; --text: #ffffff; --muted: #b894b8; }
+        [data-theme="forest"] { --bg: #0b1a11; --card: #1a2c20; --primary: #4cf08c; --accent: #09b74c; --text: #ffffff; --muted: #94b8a1; }
 
-        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #2d3d4d; }
+        html, body { height: 100dvh; overflow-x: hidden; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 15px; box-sizing: border-box; transition: background 0.3s ease; }
+        
+        .container { max-width: 100%; margin: 0 auto; padding-bottom: 40px; }
+        
+        .header { margin-bottom: 20px; text-align: center; position: relative; }
+        h1 { font-size: 22px; margin: 0 0 12px 0; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Theme Toggle */
+        .theme-toggle { position: absolute; right: 0; top: 0; background: var(--card); border: 1px solid #2d3d4d; border-radius: 12px; padding: 8px; font-size: 16px; }
+
+        .date-container { width: 100%; display: flex; justify-content: center; }
+        input[type=date] { background: var(--card); border: 1px solid #2d3d4d; color: white; padding: 10px 15px; border-radius: 25px; font-size: 15px; width: auto; text-align: center; }
+
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #2d3d4d; transition: background 0.3s ease; }
         h3 { font-size: 11px; text-transform: uppercase; color: var(--primary); letter-spacing: 1px; margin: 0 0 15px 0; }
 
         /* Snapshot Display */
@@ -23,11 +32,11 @@
         .snap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
         .snap-box { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 12px; text-align: center; }
         .snap-box label { font-size: 9px; color: var(--muted); display: block; margin-bottom: 4px; }
-        .snap-val { font-size: 13px; font-weight: 700; line-height: 1.4; }
+        .snap-val { font-size: 11px; font-weight: 700; line-height: 1.4; }
         .snap-val b { color: var(--primary); }
         .snap-meals { font-size: 13px; line-height: 1.5; color: #e2e8f0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
 
-        /* Input Layout */
+        /* Tabs & Inputs */
         .time-tabs { display: flex; gap: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; margin-bottom: 15px; }
         .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; background: none; color: var(--muted); font-weight: 700; font-size: 13px; }
         .tab.active { background: var(--primary); color: #0b1f2b; }
@@ -40,40 +49,30 @@
 
         .food-stack { display: flex; flex-direction: column; gap: 8px; }
         .food-item label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block; }
-        .food-item input { background: #0b1f2b; border: 1px solid #2d3d4d; padding: 12px; border-radius: 10px; color: white; font-size: 15px; width: 100%; box-sizing: border-box; }
+        .food-item input { background: var(--bg); border: 1px solid #2d3d4d; padding: 12px; border-radius: 10px; color: white; font-size: 16px; width: 100%; box-sizing: border-box; }
 
         .water-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #2d3d4d; }
         .water-ctrl { display: flex; align-items: center; gap: 12px; }
         .w-btn { background: var(--primary); border: none; color: #0b1f2b; width: 30px; height: 30px; border-radius: 8px; font-size: 18px; font-weight: bold; }
 
-        .btn-save { width: 100%; padding: 18px; border-radius: 18px; border: none; background: linear-gradient(45deg, #7209b7, #f72585); color: white; font-weight: 800; font-size: 17px; margin-top: 10px; }
+        .btn-save { width: 100%; padding: 18px; border-radius: 18px; border: none; background: linear-gradient(45deg, var(--accent), var(--primary)); color: white; font-weight: 800; font-size: 17px; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-csv { background: transparent; color: var(--muted); border: 1px solid var(--muted); padding: 10px; border-radius: 10px; width: 100%; margin-top: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()">🎨</button>
         <h1>Recovery Pro+</h1>
-        <div class="date-container">
-            <input type="date" id="datePicker" onchange="loadData()">
-        </div>
+        <div class="date-container"><input type="date" id="datePicker" onchange="loadData()"></div>
     </div>
 
     <div class="card snapshot-view">
         <h3>Today's Snapshot</h3>
         <div class="snap-grid">
-            <div class="snap-box">
-                <label>AM</label>
-                <div class="snap-val" id="sAM">⚡ -- | ☁️ --</div>
-            </div>
-            <div class="snap-box">
-                <label>PM</label>
-                <div class="snap-val" id="sPM">⚡ -- | ☁️ --</div>
-            </div>
-            <div class="snap-box">
-                <label>NIGHT</label>
-                <div class="snap-val" id="sNT">⚡ -- | ☁️ --</div>
-            </div>
+            <div class="snap-box"><label>AM</label><div class="snap-val" id="sAM">⚡ -- | ☁️ --</div></div>
+            <div class="snap-box"><label>PM</label><div class="snap-val" id="sPM">⚡ -- | ☁️ --</div></div>
+            <div class="snap-box"><label>NIGHT</label><div class="snap-val" id="sNT">⚡ -- | ☁️ --</div></div>
         </div>
         <div id="sMeals" class="snap-meals">No data logged.</div>
         <div style="margin-top:8px; font-size: 12px; color: var(--primary);" id="sWater">💧 Water: 0 glasses</div>
@@ -86,42 +85,45 @@
             <button class="tab" onclick="setT(this,'PM')">PM</button>
             <button class="tab" onclick="setT(this,'Night')">Night</button>
         </div>
-
         <div class="slider-section">
             <div class="label-row"><span>Energy ⚡</span> <span class="score" id="ev">5</span></div>
             <input type="range" id="e" min="1" max="10" value="5" oninput="ev.innerText=this.value">
         </div>
-
         <div class="slider-section">
             <div class="label-row"><span>Brain Fog ☁️</span> <span class="score" id="fv">5</span></div>
             <input type="range" id="f" min="1" max="10" value="5" oninput="fv.innerText=this.value">
         </div>
-
         <div class="food-stack">
             <div class="food-item"><label>Breakfast</label><input type="text" id="fb" placeholder="..."></div>
             <div class="food-item"><label>Lunch</label><input type="text" id="fl" placeholder="..."></div>
             <div class="food-item"><label>Dinner</label><input type="text" id="fd" placeholder="..."></div>
             <div class="food-item"><label>Snacks</label><input type="text" id="fs" placeholder="..."></div>
         </div>
-
-        <div class="water-row">
-            <span style="font-size: 12px; font-weight: 600;">Water 💧</span>
-            <div class="water-ctrl">
-                <button class="w-btn" onclick="addW(-1)">-</button>
-                <b id="wv" style="font-size: 17px; min-width: 20px; text-align: center;">0</b>
-                <button class="w-btn" onclick="addW(1)">+</button>
-            </div>
+        <div class="water-row"><span style="font-size: 12px; font-weight: 600;">Water 💧</span>
+            <div class="water-ctrl"><button class="w-btn" onclick="addW(-1)">-</button><b id="wv" style="font-size: 17px; min-width: 20px; text-align: center;">0</b><button class="w-btn" onclick="addW(1)">+</button></div>
         </div>
-
         <button class="btn-save" onclick="save()">Update Dashboard</button>
     </div>
+    <button class="btn-csv" onclick="exportCSV()">Download All Data (CSV)</button>
 </div>
 
 <script>
     let activeTime = 'AM';
-    let db = JSON.parse(localStorage.getItem('recovery_v6_db') || '{}');
+    let db = JSON.parse(localStorage.getItem('recovery_v7_db') || '{}');
     const dt = document.getElementById('datePicker');
     dt.valueAsDate = new Date();
+
+    function toggleTheme() {
+        const themes = ['default', 'berry', 'forest'];
+        let current = document.body.getAttribute('data-theme') || 'default';
+        let next = themes[(themes.indexOf(current) + 1) % themes.length];
+        document.body.setAttribute('data-theme', next);
+        localStorage.setItem('user_theme', next);
+    }
+
+    if(localStorage.getItem('user_theme')) {
+        document.body.setAttribute('data-theme', localStorage.getItem('user_theme'));
+    }
 
     function setT(btn, t) {
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -140,8 +142,9 @@
         db[d][activeTime.toLowerCase()] = { e: document.getElementById('e').value, f: document.getElementById('f').value };
         db[d].food = { b: document.getElementById('fb').value, l: document.getElementById('fl').value, d: document.getElementById('fd').value, s: document.getElementById('fs').value };
         db[d].water = parseInt(document.getElementById('wv').innerText);
-        localStorage.setItem('recovery_v6_db', JSON.stringify(db));
+        localStorage.setItem('recovery_v7_db', JSON.stringify(db));
         loadData();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function loadData() {
@@ -156,12 +159,20 @@
         if(f.b || f.l || f.d || f.s) {
             document.getElementById('sMeals').innerHTML = `<b>B:</b> ${f.b||'-'} | <b>L:</b> ${f.l||'-'}<br><b>D:</b> ${f.d||'-'} | <b>S:</b> ${f.s||'-'}`;
         } else { document.getElementById('sMeals').innerText = "No meals logged."; }
-        document.getElementById('fb').value = f.b || '';
-        document.getElementById('fl').value = f.l || '';
-        document.getElementById('fd').value = f.d || '';
-        document.getElementById('fs').value = f.s || '';
-        document.getElementById('wv').innerText = data.water || 0;
+        document.getElementById('fb').value = f.b || ''; document.getElementById('fl').value = f.l || ''; document.getElementById('fd').value = f.d || ''; document.getElementById('fs').value = f.s || ''; document.getElementById('wv').innerText = data.water || 0;
     }
+
+    function exportCSV() {
+        let csv = "Date,Slot,Energy,Fog,Breakfast,Lunch,Dinner,Snacks,Water\n";
+        for (const [date, val] of Object.entries(db)) {
+            ['am','pm','night'].forEach(s => {
+                const sym = val[s] || {}; const f = val.food || {};
+                csv += `${date},${s},${sym.e||''},${sym.f||''},"${f.b||''}","${f.l||''}","${f.d||''}","${f.s||''}",${val.water||0}\n`;
+            });
+        }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'Recovery_History.csv'; a.click();
+    }
+
     loadData();
 </script>
 </body>
